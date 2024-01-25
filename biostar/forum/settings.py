@@ -164,6 +164,7 @@ CACHES = {
 # Strict rules applied to post tags
 STRICT_TAGS = True
 
+DROPDOWN_TAGS = False
 TASK_MODULES = ("biostar.forum.tasks", )
 
 # Enable debug toolbar specific functions
@@ -173,5 +174,25 @@ if DEBUG_TOOLBAR:
     ])
     MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 
+
+# Words when present in the content get you banned.
+BANNED_WORDS_CONTENT = r"""
+\bcialis
+\bviagra
+\bmoney
+\bloan
+\bcustomer
+\bcash 
+"""
+
+# Words, that when present in the title get you banned.
+BANNED_WORDS_TITLE  = r"""
+\bcash
+\bmoney
+\bloan
+\d{6,}
+http 
+https
+"""
 
 

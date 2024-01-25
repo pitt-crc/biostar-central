@@ -291,6 +291,27 @@ def follow_label(context, post):
     return label
 
 
+@register.inclusion_tag('forms/field_tags.html', takes_context=True)
+def tags_field(context, form_field, initial=''):
+    """Render multi-select dropdown options for tags. """
+
+    # Read from tags file
+    tags_file = getattr(settings, "TAGS_OPTIONS_FILE", None)
+    # Get currently selected tags from the post or request
+    selected = initial.split(",") if initial else []
+    selected = {(val, True) for val in selected}
+    if tags_file:
+        opts = file_tags_options(selected)
+    else:
+        opts = {}
+
+    options = itertools.chain(selected, opts)
+
+    context = dict(initial=initial, form_field=form_field, dropdown_options=options)
+
+    return context
+
+
 @register.simple_tag
 def inplace_type_field(post=None, field_id='type'):
     choices = [opt for opt in Post.TYPE_CHOICES]
@@ -362,7 +383,7 @@ def form_errors(form, wmd_prefix='', override_content=False):
         for field in form:
             for error in field.errors:
                 # wmd_prefix is required when dealing with 'content' field.
-                field_id = wmd_prefix if (override_content and field.name is 'content') else field.id_for_label
+                field_id = wmd_prefix if (override_content and field.name == 'content') else field.id_for_label
                 errorlist.append((f'{field.name}:', error, field_id))
 
     except Exception as exc:

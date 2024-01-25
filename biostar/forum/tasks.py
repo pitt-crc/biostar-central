@@ -213,6 +213,7 @@ def set_link_title(pk):
         logger.warning(exc)
 
 
+
 @task
 def spam_check(uid):
     from biostar.forum.models import Post, Log, delete_post_cache
@@ -221,6 +222,9 @@ def spam_check(uid):
 
     post = Post.objects.filter(uid=uid).first()
     author = post.author
+
+    if not settings.CLASSIFY_SPAM:
+        return
 
     # Automated spam disabled in for trusted user
     if author.profile.trusted or author.profile.score > 50:
@@ -252,9 +256,13 @@ def spam_check(uid):
             return
 
         ## Links in title usually mean spam.
-        spam_words = ["http://", "https://"]
+        spam_words = ["http://", "https://" ]
         for word in spam_words:
-            flag = flag or (word in post.title)
+            flag = flag or (word in post.title.lower())
+        
+        spam_words2 = ["cialis", "viagra" ]
+        for word in spam_words2:
+            flag = flag or (word in post.title.lower() + post.content.lower())
 
         # Handle the spam.
         if flag:
@@ -316,8 +324,8 @@ def herald_emails(uid):
         # Get the next set of emails
         end = idx + batch_size
         rec_list = emails[idx:end]
-        send_email(template_name=email_template, extra_context=context, name=author, from_email=from_email,
-                   recipient_list=rec_list, mass=True)
+        send_email(template_name=email_template, extra_context=context, name=author,
+        from_email=from_email,recipient_list=rec_list, mass=True)
 
     return
 
